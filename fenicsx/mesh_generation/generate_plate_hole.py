@@ -1,8 +1,6 @@
 import gmsh
-import dolfinx
-import numpy as np
 from mpi4py import MPI
-from dolfinx.io import gmshio
+from dolfinx.io import gmsh as gmshio
 import sys, os
 from dolfinx import plot
 
@@ -70,7 +68,16 @@ gmsh.model.mesh.setOrder(1)
 gmsh.model.mesh.optimize("Netgen")
 
 # Create and import mesh to DOLFINx
-domain, cell_markers, facet_markers = gmshio.model_to_mesh(gmsh.model, MPI.COMM_WORLD, 0, gdim=2)
+mesh_data = gmshio.model_to_mesh(
+    gmsh.model,
+    MPI.COMM_WORLD,
+    0,
+    gdim=2
+)
+
+domain = mesh_data.mesh
+cell_markers = mesh_data.cell_tags
+facet_markers = mesh_data.facet_tags
 
 # The mesh is now ready to use in DOLFINx
 # You can access it through the 'domain' variable

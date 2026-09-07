@@ -81,9 +81,8 @@ l_form = q*u_*dx
 #APPLY BOUNDARY CONDITIONS
 #initialize function for boundary condition application
 ubc = Function(W)
-with ubc.vector.localForm() as uloc:
-     uloc.set(0.)
-
+with ubc.x.petsc_vec.localForm() as uloc:
+    uloc.set(0.0)
 #locate endpoints
 startpt=locate_entities_boundary(domain,0,lambda x : np.isclose(x[0], 0))
 endpt=locate_entities_boundary(domain,0,lambda x : np.isclose(x[0], L))
@@ -101,7 +100,8 @@ fixed_rot = dirichletbc(ubc,np.array([startdof[1]]))
 u = Function(W)
 
 # solve variational problem
-problem = LinearProblem(k_form, l_form, u=u, bcs=[fixed_disp,fixed_rot])
+problem = LinearProblem(k_form, l_form, u=u, bcs=[fixed_disp,fixed_rot], \
+                        petsc_options_prefix="linear_problem_")
 uh=problem.solve()
 uh.name = "Displacement and Rotation "
 
@@ -128,7 +128,7 @@ for i,x in enumerate(uh.x.array):
 T = functionspace(domain,("CG",1))
 
 #interpolate exact ufl expression onto high-order function space
-disp_expr = Expression(w_cl,T.element.interpolation_points())
+disp_expr = Expression(w_cl, T.element.interpolation_points)
 disp_exact = Function(T)
 disp_exact.interpolate(disp_expr)
 
